@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Gincana MapaFest 2025</title>
+<title>Gincana MapaFest 2025 - Regiões Históricas</title>
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; background: #f4f6f8; }
   h1 { text-align: center; color: #2a9d8f; }
@@ -10,11 +10,10 @@
   table { border-collapse: collapse; width: 100%; margin-top: 20px; background: #fff; }
   th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
   th { background: #2a9d8f; color: #fff; }
-  .grupoA { background: #e0f2f1; }
+  .grupoA { background: #f1f8e9; }
   .grupoB { background: #e3f2fd; }
   .grupoC { background: #fff3e0; }
   .grupoD { background: #fce4ec; }
-  #configGrupos input { width: 180px; margin-right: 10px; }
   .msg { font-weight: bold; color: #1565c0; margin-top: 10px; }
   .csv-btn { background: #1565c0; color: #fff; border: none; padding: 8px 12px; cursor: pointer; border-radius: 6px; }
   .csv-btn:hover { background: #0d47a1; }
@@ -24,22 +23,13 @@
   .primeiro { color: gold; }
   .segundo { color: silver; }
   .terceiro { color: #cd7f32; }
+  .lema { font-size: 13px; color: #555; font-style: italic; margin-top: -6px; }
 </style>
 </head>
 <body>
 
-<h1>🏆 Gincana MapaFest 2025</h1>
-<p style="text-align:center;">Gerencie a gincana dos mapeadores! Confirme tarefas e acompanhe o ranking entre os grupos!</p>
-
-<!-- Configuração dos grupos -->
-<h3>🎯 Configuração dos Grupos</h3>
-<div id="configGrupos">
-  <input type="text" id="nomeA" placeholder="Nome do Grupo A" value="Grupo A">
-  <input type="text" id="nomeB" placeholder="Nome do Grupo B" value="Grupo B">
-  <input type="text" id="nomeC" placeholder="Nome do Grupo C" value="Grupo C">
-  <input type="text" id="nomeD" placeholder="Nome do Grupo D" value="Grupo D">
-  <button onclick="salvarNomes()">Salvar Nomes</button>
-</div>
+<h1>🏆 Gincana MapaFest 2025 - Regiões Históricas</h1>
+<p style="text-align:center;">Mapeando o Brasil pelas suas origens — cada ponto, uma história.</p>
 
 <!-- Ranking geral -->
 <div class="ranking-geral">
@@ -55,6 +45,10 @@
   <li>3️⃣ Mapear praças e áreas verdes</li>
   <li>4️⃣ Corrigir nomes duplicados de ruas</li>
   <li>5️⃣ Adicionar ciclovias e pistas de caminhada</li>
+  <li>6️⃣ Mapeamento livre em qualquer lugar do Brasil</li>
+  <li>7️⃣ Mapear 5 edificações em um bairro</li>
+  <li>8️⃣ Mapear árvores em qualquer lugar do Brasil</li>
+  <li>9️⃣ Mapear uma área verde no limite da Amazônia Legal</li>
 </ul>
 
 <!-- Registrar atividade -->
@@ -62,16 +56,16 @@
 <input type="text" id="nomeParticipante" placeholder="Nome do participante">
 <select id="grupoSelect">
   <option value="">Selecione o grupo</option>
-  <option value="A">Grupo A</option>
-  <option value="B">Grupo B</option>
-  <option value="C">Grupo C</option>
-  <option value="D">Grupo D</option>
+  <option value="A">🗺️ Capitanias</option>
+  <option value="B">🏞️ Sertões</option>
+  <option value="C">⛪ Missões</option>
+  <option value="D">✊🏿 Quilombos</option>
 </select>
-<input type="number" id="atividade" min="1" max="5" placeholder="Nº da tarefa">
+<input type="number" id="atividade" min="1" max="9" placeholder="Nº da tarefa">
 <button onclick="registrarAtividade()">Registrar</button>
 <div id="mensagem" class="msg"></div>
 
-<!-- Tabela de ranking detalhado -->
+<!-- Tabela de ranking -->
 <h3>📊 Detalhamento dos Grupos e Participantes</h3>
 <table id="rankingTable">
   <thead>
@@ -91,10 +85,10 @@
 
 <script>
 const grupos = {
-  A: { nome: "Grupo A", total: 0, cor: "grupoA", participantes: [] },
-  B: { nome: "Grupo B", total: 0, cor: "grupoB", participantes: [] },
-  C: { nome: "Grupo C", total: 0, cor: "grupoC", participantes: [] },
-  D: { nome: "Grupo D", total: 0, cor: "grupoD", participantes: [] }
+  A: { nome: "🗺️ Capitanias", lema: "De onde tudo começou.", total: 0, cor: "grupoA", participantes: [] },
+  B: { nome: "🏞️ Sertões", lema: "Explorando caminhos e descobertas.", total: 0, cor: "grupoB", participantes: [] },
+  C: { nome: "⛪ Missões", lema: "Mapeando pela união dos povos.", total: 0, cor: "grupoC", participantes: [] },
+  D: { nome: "✊🏿 Quilombos", lema: "Mapeando com coragem e liberdade.", total: 0, cor: "grupoD", participantes: [] }
 };
 
 const tarefas = {
@@ -102,17 +96,12 @@ const tarefas = {
   2: "Adicionar nomes de edifícios históricos",
   3: "Mapear praças e áreas verdes",
   4: "Corrigir nomes duplicados de ruas",
-  5: "Adicionar ciclovias e pistas de caminhada"
+  5: "Adicionar ciclovias e pistas de caminhada",
+  6: "Mapeamento livre em qualquer lugar do Brasil",
+  7: "Mapear 5 edificações em um bairro",
+  8: "Mapear árvores em qualquer lugar do Brasil",
+  9: "Mapear uma área verde no limite da Amazônia Legal"
 };
-
-function salvarNomes() {
-  grupos.A.nome = document.getElementById('nomeA').value || "Grupo A";
-  grupos.B.nome = document.getElementById('nomeB').value || "Grupo B";
-  grupos.C.nome = document.getElementById('nomeC').value || "Grupo C";
-  grupos.D.nome = document.getElementById('nomeD').value || "Grupo D";
-  atualizarTabelas();
-  document.getElementById('mensagem').textContent = "✅ Nomes dos grupos atualizados!";
-}
 
 function registrarAtividade() {
   const nome = document.getElementById('nomeParticipante').value.trim();
@@ -134,11 +123,7 @@ function registrarAtividade() {
     grupo.participantes.push(participante);
   }
 
-  participante.atividades.push({
-    nome: tarefas[atividadeNum],
-    concluido: false
-  });
-
+  participante.atividades.push({ nome: tarefas[atividadeNum], concluido: false });
   msg.textContent = `📝 ${nome} iniciou a tarefa "${tarefas[atividadeNum]}" (${grupo.nome})`;
   atualizarTabelas();
 }
@@ -159,7 +144,6 @@ function confirmarTarefa(gId, nomeParticipante, indexAtividade) {
 }
 
 function atualizarTabelas() {
-  // Atualiza ranking detalhado
   const tbody = document.getElementById('rankingTable').getElementsByTagName('tbody')[0];
   tbody.innerHTML = "";
 
@@ -169,7 +153,7 @@ function atualizarTabelas() {
       p.atividades.forEach((a, i) => {
         const row = tbody.insertRow();
         row.className = g.cor;
-        row.insertCell(0).innerText = g.nome;
+        row.insertCell(0).innerHTML = `${g.nome}<div class='lema'>${g.lema}</div>`;
         row.insertCell(1).innerText = p.nome;
         row.insertCell(2).innerText = a.nome;
         row.insertCell(3).innerText = p.pontos;
@@ -177,48 +161,4 @@ function atualizarTabelas() {
         if (a.concluido) {
           btnCell.innerHTML = "✅ Feito";
         } else {
-          const btn = document.createElement('button');
-          btn.textContent = "Confirmar";
-          btn.onclick = () => confirmarTarefa(gId, p.nome, i);
-          btnCell.appendChild(btn);
-        }
-        row.insertCell(5).innerText = g.total;
-      });
-    });
-  });
-
-  // Atualiza ranking geral
-  const rankingDiv = document.getElementById('rankingGeral');
-  const gruposOrdenados = Object.values(grupos).sort((a, b) => b.total - a.total);
-  rankingDiv.innerHTML = "";
-  gruposOrdenados.forEach((g, i) => {
-    const posDiv = document.createElement('div');
-    posDiv.className = "posicao";
-    if (i === 0) posDiv.classList.add('primeiro');
-    if (i === 1) posDiv.classList.add('segundo');
-    if (i === 2) posDiv.classList.add('terceiro');
-    posDiv.textContent = `${i+1}º - ${g.nome} (${g.total} pts)`;
-    rankingDiv.appendChild(posDiv);
-  });
-}
-
-function baixarCSV() {
-  let csv = "Grupo,Participante,Atividades Concluídas,Pontos,Total do Grupo\n";
-  Object.keys(grupos).forEach(gId => {
-    const g = grupos[gId];
-    g.participantes.forEach(p => {
-      const concluidas = p.atividades.filter(a => a.concluido).map(a => a.nome);
-      csv += `${g.nome},${p.nome},"${concluidas.join("; ")}",${p.pontos},${g.total}\n`;
-    });
-  });
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'ranking_gincana_mapafest.csv';
-  link.click();
-}
-</script>
-
-</body>
-</html>
 
