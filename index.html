@@ -31,13 +31,11 @@
 <h1>🏆 Gincana MapaFest 2025 - Regiões Históricas</h1>
 <p style="text-align:center;">Mapeando o Brasil pelas suas origens — cada ponto, uma história.</p>
 
-<!-- Ranking geral -->
 <div class="ranking-geral">
   <h2>🏁 Ranking Geral dos Grupos</h2>
   <div id="rankingGeral"></div>
 </div>
 
-<!-- Tarefas -->
 <h3>🗺️ Tarefas disponíveis:</h3>
 <ul id="listaTarefas">
   <li>1️⃣ Mapear ruas do bairro central</li>
@@ -51,7 +49,6 @@
   <li>9️⃣ Mapear uma área verde no limite da Amazônia Legal</li>
 </ul>
 
-<!-- Registrar atividade -->
 <h3>🚩 Registrar atividade:</h3>
 <input type="text" id="nomeParticipante" placeholder="Nome do participante">
 <select id="grupoSelect">
@@ -65,7 +62,6 @@
 <button onclick="registrarAtividade()">Registrar</button>
 <div id="mensagem" class="msg"></div>
 
-<!-- Tabela de ranking -->
 <h3>📊 Detalhamento dos Grupos e Participantes</h3>
 <table id="rankingTable">
   <thead>
@@ -117,15 +113,25 @@ function registrarAtividade() {
   }
 
   const grupo = grupos[grupoId];
-  let participante = grupo.participantes.find(p => p.nome === nome);
+  let participante = grupo.participantes.find(p => p.nome.toLowerCase() === nome.toLowerCase());
   if (!participante) {
     participante = { nome, atividades: [], pontos: 0 };
     grupo.participantes.push(participante);
   }
 
+  const jaExiste = participante.atividades.find(a => a.nome === tarefas[atividadeNum]);
+  if (jaExiste) {
+    msg.textContent = "⚠️ Essa tarefa já foi registrada para este participante.";
+    return;
+  }
+
   participante.atividades.push({ nome: tarefas[atividadeNum], concluido: false });
   msg.textContent = `📝 ${nome} iniciou a tarefa "${tarefas[atividadeNum]}" (${grupo.nome})`;
   atualizarTabelas();
+
+  document.getElementById('nomeParticipante').value = '';
+  document.getElementById('grupoSelect').value = '';
+  document.getElementById('atividade').value = '';
 }
 
 function confirmarTarefa(gId, nomeParticipante, indexAtividade) {
@@ -161,4 +167,47 @@ function atualizarTabelas() {
         if (a.concluido) {
           btnCell.innerHTML = "✅ Feito";
         } else {
+          const btn = document.createElement('button');
+          btn.textContent = "Confirmar";
+          btn.onclick = () => confirmarTarefa(gId, p.nome, i);
+          btnCell.appendChild(btn);
+        }
+        row.insertCell(5).innerText = g.total;
+      });
+    });
+  });
+
+  const rankingDiv = document.getElementById('rankingGeral');
+  const gruposOrdenados = Object.values(grupos).sort((a, b) => b.total - a.total);
+  rankingDiv.innerHTML = "";
+  gruposOrdenados.forEach((g, i) => {
+    const posDiv = document.createElement('div');
+    posDiv.className = "posicao";
+    if (i === 0) posDiv.classList.add('primeiro');
+    if (i === 1) posDiv.classList.add('segundo');
+    if (i === 2) posDiv.classList.add('terceiro');
+    posDiv.innerHTML = `${i+1}º - ${g.nome} (${g.total} pts) <div class='lema'>${g.lema}</div>`;
+    rankingDiv.appendChild(posDiv);
+  });
+}
+
+function baixarCSV() {
+  let csv = "Grupo,Participante,Atividades Concluídas,Pontos,Total do Grupo\\n";
+  Object.keys(grupos).forEach(gId => {
+    const g = grupos[gId];
+    g.participantes.forEach(p => {
+      const concluidas = p.atividades.filter(a => a.concluido).map(a => a.nome);
+      csv += `${g.nome},${p.nome},\\"${concluidas.join("; ")}\\",${p.pontos},${g.total}\\n`;
+    });
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'ranking_gincana_historica.csv';
+  link.click();
+}
+</script>
+
+</body>
+</html>
 
