@@ -2,136 +2,221 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>MapaFest - Protótipo Avançado</title>
+<title>Gincana MapaFest 2025</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
-h1 { color: #2a9d8f; }
-h2 { color: #264653; }
-button { padding: 5px 10px; margin: 5px; cursor: pointer; }
-.task { background: #fff; padding: 10px; margin: 10px 0; border-radius: 5px; box-shadow: 1px 1px 5px #ccc; }
-table { border-collapse: collapse; width: 100%; margin-top: 20px; background: #fff; }
-th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-th { background: #2a9d8f; color: #fff; }
-.medal-bar { width: 100%; background: #ccc; border-radius: 10px; margin: 10px 0; overflow: hidden; height: 20px; }
-.medal-progress { height: 100%; width: 0; text-align: center; color: #fff; line-height: 20px; font-weight: bold; transition: width 1s; }
-.medal-bronze { background: #cd7f32; }
-.medal-silver { background: #c0c0c0; color: #000; }
-.medal-gold { background: #ffd700; color: #000; }
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f4f6f8; }
+  h1 { text-align: center; color: #2a9d8f; }
+  input, button, select { padding: 8px; margin: 5px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 20px; background: #fff; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background: #2a9d8f; color: #fff; }
+  .grupoA { background: #e0f2f1; }
+  .grupoB { background: #e3f2fd; }
+  .grupoC { background: #fff3e0; }
+  .grupoD { background: #fce4ec; }
+  #configGrupos input { width: 180px; margin-right: 10px; }
+  .msg { font-weight: bold; color: #1565c0; margin-top: 10px; }
+  .csv-btn { background: #1565c0; color: #fff; border: none; padding: 8px 12px; cursor: pointer; border-radius: 6px; }
+  .csv-btn:hover { background: #0d47a1; }
+  .ranking-geral { background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  .ranking-geral h2 { text-align: center; color: #264653; }
+  .posicao { font-weight: bold; font-size: 18px; margin: 5px 0; }
+  .primeiro { color: gold; }
+  .segundo { color: silver; }
+  .terceiro { color: #cd7f32; }
 </style>
 </head>
 <body>
 
-<h1>🏆 MapaFest 2025</h1>
-<p>Complete tarefas de mapeamento no OpenStreetMap e ganhe medalhas! Cada tarefa concluída adiciona pontos ao seu ranking.</p>
+<h1>🏆 Gincana MapaFest 2025</h1>
+<p style="text-align:center;">Gerencie a gincana dos mapeadores! Confirme tarefas e acompanhe o ranking entre os grupos!</p>
 
-<h2>Tarefas Disponíveis</h2>
-<div id="tasksContainer"></div>
+<!-- Configuração dos grupos -->
+<h3>🎯 Configuração dos Grupos</h3>
+<div id="configGrupos">
+  <input type="text" id="nomeA" placeholder="Nome do Grupo A" value="Grupo A">
+  <input type="text" id="nomeB" placeholder="Nome do Grupo B" value="Grupo B">
+  <input type="text" id="nomeC" placeholder="Nome do Grupo C" value="Grupo C">
+  <input type="text" id="nomeD" placeholder="Nome do Grupo D" value="Grupo D">
+  <button onclick="salvarNomes()">Salvar Nomes</button>
+</div>
 
-<h2>Ranking</h2>
+<!-- Ranking geral -->
+<div class="ranking-geral">
+  <h2>🏁 Ranking Geral dos Grupos</h2>
+  <div id="rankingGeral"></div>
+</div>
+
+<!-- Tarefas -->
+<h3>🗺️ Tarefas disponíveis:</h3>
+<ul id="listaTarefas">
+  <li>1️⃣ Mapear ruas do bairro central</li>
+  <li>2️⃣ Adicionar nomes de edifícios históricos</li>
+  <li>3️⃣ Mapear praças e áreas verdes</li>
+  <li>4️⃣ Corrigir nomes duplicados de ruas</li>
+  <li>5️⃣ Adicionar ciclovias e pistas de caminhada</li>
+</ul>
+
+<!-- Registrar atividade -->
+<h3>🚩 Registrar atividade:</h3>
+<input type="text" id="nomeParticipante" placeholder="Nome do participante">
+<select id="grupoSelect">
+  <option value="">Selecione o grupo</option>
+  <option value="A">Grupo A</option>
+  <option value="B">Grupo B</option>
+  <option value="C">Grupo C</option>
+  <option value="D">Grupo D</option>
+</select>
+<input type="number" id="atividade" min="1" max="5" placeholder="Nº da tarefa">
+<button onclick="registrarAtividade()">Registrar</button>
+<div id="mensagem" class="msg"></div>
+
+<!-- Tabela de ranking detalhado -->
+<h3>📊 Detalhamento dos Grupos e Participantes</h3>
 <table id="rankingTable">
   <thead>
     <tr>
-      <th>Usuário</th>
-      <th>Medalhas</th>
+      <th>Grupo</th>
+      <th>Participante</th>
+      <th>Atividade</th>
       <th>Pontos</th>
-      <th>Progresso</th>
+      <th>Confirmar</th>
+      <th>Total do Grupo</th>
     </tr>
   </thead>
   <tbody></tbody>
 </table>
 
+<button class="csv-btn" onclick="baixarCSV()">⬇️ Baixar Ranking em CSV</button>
+
 <script>
-const tasks = [
-  { id: 1, name: "Mapear ruas do bairro central", points: 1, completedBy: [] },
-  { id: 2, name: "Adicionar nomes de edifícios históricos", points: 2, completedBy: [] },
-  { id: 3, name: "Mapear praças e bancos públicos", points: 1, completedBy: [] },
-  { id: 4, name: "Atualizar postes de iluminação pública", points: 2, completedBy: [] },
-  { id: 5, name: "Adicionar ciclovias e pistas de caminhada", points: 1, completedBy: [] },
-  { id: 6, name: "Verificar endereços e CEPs", points: 1, completedBy: [] },
-  { id: 7, name: "Mapear hospitais e postos de saúde", points: 3, completedBy: [] },
-  { id: 8, name: "Atualizar nomes de ruas novas", points: 2, completedBy: [] },
-];
+const grupos = {
+  A: { nome: "Grupo A", total: 0, cor: "grupoA", participantes: [] },
+  B: { nome: "Grupo B", total: 0, cor: "grupoB", participantes: [] },
+  C: { nome: "Grupo C", total: 0, cor: "grupoC", participantes: [] },
+  D: { nome: "Grupo D", total: 0, cor: "grupoD", participantes: [] }
+};
 
-const ranking = [];
+const tarefas = {
+  1: "Mapear ruas do bairro central",
+  2: "Adicionar nomes de edifícios históricos",
+  3: "Mapear praças e áreas verdes",
+  4: "Corrigir nomes duplicados de ruas",
+  5: "Adicionar ciclovias e pistas de caminhada"
+};
 
-function renderTasks() {
-  const container = document.getElementById('tasksContainer');
-  container.innerHTML = '';
-  tasks.forEach(task => {
-    const div = document.createElement('div');
-    div.className = 'task';
-    div.innerHTML = `<strong>${task.name}</strong> - Pontos: ${task.points} 
-      <button onclick="completeTask(${task.id})">Concluir Tarefa</button>`;
-    container.appendChild(div);
-  });
+function salvarNomes() {
+  grupos.A.nome = document.getElementById('nomeA').value || "Grupo A";
+  grupos.B.nome = document.getElementById('nomeB').value || "Grupo B";
+  grupos.C.nome = document.getElementById('nomeC').value || "Grupo C";
+  grupos.D.nome = document.getElementById('nomeD').value || "Grupo D";
+  atualizarTabelas();
+  document.getElementById('mensagem').textContent = "✅ Nomes dos grupos atualizados!";
 }
 
-function completeTask(taskId) {
-  const task = tasks.find(t => t.id === taskId);
-  const userName = prompt("Digite seu nome de usuário:");
-  if(!userName) return;
+function registrarAtividade() {
+  const nome = document.getElementById('nomeParticipante').value.trim();
+  const grupoId = document.getElementById('grupoSelect').value;
+  const atividadeNum = document.getElementById('atividade').value;
+  const msg = document.getElementById('mensagem');
 
-  // Checa se o usuário já completou a tarefa
-  if(task.completedBy.includes(userName)){
-    alert("Você já completou esta tarefa!");
+  msg.textContent = "";
+
+  if (!nome || !grupoId || !atividadeNum) {
+    msg.textContent = "⚠️ Preencha todas as informações!";
     return;
   }
 
-  task.completedBy.push(userName);
-
-  // Adiciona ou atualiza usuário no ranking
-  let user = ranking.find(r => r.user === userName);
-  if(!user){
-    user = { user: userName, points: 0, medals: [], progress: 0 };
-    ranking.push(user);
+  const grupo = grupos[grupoId];
+  let participante = grupo.participantes.find(p => p.nome === nome);
+  if (!participante) {
+    participante = { nome, atividades: [], pontos: 0 };
+    grupo.participantes.push(participante);
   }
 
-  user.points += task.points;
+  participante.atividades.push({
+    nome: tarefas[atividadeNum],
+    concluido: false
+  });
 
-  // Atualiza medalha e progresso
-  if(user.points >= 10){
-    user.medals = ['🥇 Ouro'];
-    user.progress = 100;
-  } else if(user.points >= 5){
-    user.medals = ['🥈 Prata'];
-    user.progress = (user.points/10)*100;
-  } else {
-    user.medals = ['🥉 Bronze'];
-    user.progress = (user.points/10)*100;
-  }
-
-  updateRanking();
+  msg.textContent = `📝 ${nome} iniciou a tarefa "${tarefas[atividadeNum]}" (${grupo.nome})`;
+  atualizarTabelas();
 }
 
-function updateRanking(){
+function confirmarTarefa(gId, nomeParticipante, indexAtividade) {
+  const grupo = grupos[gId];
+  const participante = grupo.participantes.find(p => p.nome === nomeParticipante);
+  const atividade = participante.atividades[indexAtividade];
+
+  if (atividade.concluido) return;
+
+  atividade.concluido = true;
+  participante.pontos += 1;
+  grupo.total += 1;
+
+  document.getElementById('mensagem').textContent = `✅ ${nomeParticipante} concluiu "${atividade.nome}" (${grupo.nome})!`;
+  atualizarTabelas();
+}
+
+function atualizarTabelas() {
+  // Atualiza ranking detalhado
   const tbody = document.getElementById('rankingTable').getElementsByTagName('tbody')[0];
-  tbody.innerHTML = '';
+  tbody.innerHTML = "";
 
-  // Ordena ranking por pontos
-  ranking.sort((a,b) => b.points - a.points);
+  Object.keys(grupos).forEach(gId => {
+    const g = grupos[gId];
+    g.participantes.forEach(p => {
+      p.atividades.forEach((a, i) => {
+        const row = tbody.insertRow();
+        row.className = g.cor;
+        row.insertCell(0).innerText = g.nome;
+        row.insertCell(1).innerText = p.nome;
+        row.insertCell(2).innerText = a.nome;
+        row.insertCell(3).innerText = p.pontos;
+        const btnCell = row.insertCell(4);
+        if (a.concluido) {
+          btnCell.innerHTML = "✅ Feito";
+        } else {
+          const btn = document.createElement('button');
+          btn.textContent = "Confirmar";
+          btn.onclick = () => confirmarTarefa(gId, p.nome, i);
+          btnCell.appendChild(btn);
+        }
+        row.insertCell(5).innerText = g.total;
+      });
+    });
+  });
 
-  ranking.forEach(r => {
-    const row = tbody.insertRow();
-    row.insertCell(0).innerText = r.user;
-    row.insertCell(1).innerText = r.medals.join(' ');
-    row.insertCell(2).innerText = r.points;
-
-    // Barra de medalhas animada
-    const progressCell = row.insertCell(3);
-    const bar = document.createElement('div');
-    bar.className = 'medal-bar';
-    const progress = document.createElement('div');
-    progress.className = 'medal-progress ' + (r.medals[0] === '🥇 Ouro' ? 'medal-gold' : r.medals[0] === '🥈 Prata' ? 'medal-silver' : 'medal-bronze');
-    progress.style.width = r.progress + '%';
-    progress.innerText = r.progress.toFixed(0) + '%';
-    bar.appendChild(progress);
-    progressCell.appendChild(bar);
+  // Atualiza ranking geral
+  const rankingDiv = document.getElementById('rankingGeral');
+  const gruposOrdenados = Object.values(grupos).sort((a, b) => b.total - a.total);
+  rankingDiv.innerHTML = "";
+  gruposOrdenados.forEach((g, i) => {
+    const posDiv = document.createElement('div');
+    posDiv.className = "posicao";
+    if (i === 0) posDiv.classList.add('primeiro');
+    if (i === 1) posDiv.classList.add('segundo');
+    if (i === 2) posDiv.classList.add('terceiro');
+    posDiv.textContent = `${i+1}º - ${g.nome} (${g.total} pts)`;
+    rankingDiv.appendChild(posDiv);
   });
 }
 
-// Inicializa
-renderTasks();
-updateRanking();
+function baixarCSV() {
+  let csv = "Grupo,Participante,Atividades Concluídas,Pontos,Total do Grupo\n";
+  Object.keys(grupos).forEach(gId => {
+    const g = grupos[gId];
+    g.participantes.forEach(p => {
+      const concluidas = p.atividades.filter(a => a.concluido).map(a => a.nome);
+      csv += `${g.nome},${p.nome},"${concluidas.join("; ")}",${p.pontos},${g.total}\n`;
+    });
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'ranking_gincana_mapafest.csv';
+  link.click();
+}
 </script>
 
 </body>
